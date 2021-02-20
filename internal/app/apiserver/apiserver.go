@@ -1,7 +1,6 @@
 package apiserver
 
 import (
-	"io"
 	"my-api/internal/app/apiserver/controllers"
 	"net/http"
 
@@ -50,13 +49,6 @@ func (s *APIServer) configureLogger() error {
 }
 
 func (s *APIServer) configureRouter() {
-	s.router.HandleFunc("/hello", s.handleHello()).Methods("GET")
-
 	s.router.HandleFunc("/login", controllers.HandleLogin()).Methods("POST")
-}
-
-func (s *APIServer) handleHello() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "hello")
-	}
+	s.router.HandleFunc("/signup", controllers.HandleSignup()).Methods("POST")
 }

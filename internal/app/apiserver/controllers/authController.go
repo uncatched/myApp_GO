@@ -2,26 +2,48 @@ package controllers
 
 import (
 	"encoding/json"
+	"my-api/internal/app/apiserver/models"
+	"my-api/internal/validate"
 	"net/http"
 )
-
-// Account ...
-type Account struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-// JWTToken ...
-type JWTToken struct {
-	Token string `json:"token"`
-}
 
 // HandleLogin ...
 func HandleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		account := &Account{}
+		account := &models.AuthUser{}
+		err := json.NewDecoder(r.Body).Decode(account)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			message := message(false, err.Error())
+			json.NewEncoder(w).Encode(message)
+			return
+		}
+
+		v := validate.Validator{}
+		err = v.Validate(account)
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			message := message(false, err.Error())
+			json.NewEncoder(w).Encode(message)
+			return
+		}
+
+		token := models.JWTToken{
+			Token: "123qweasdzxc456rtyfghvbn",
+		}
+
+		json.NewEncoder(w).Encode(&token)
+	}
+}
+
+// HandleSignup ...
+func HandleSignup() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		account := &models.AuthUser{}
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
@@ -30,21 +52,16 @@ func HandleLogin() http.HandlerFunc {
 			return
 		}
 
-		if account.Email == "" {
+		v := validate.Validator{}
+		err = v.Validate(account)
+		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
-			message := message(false, "Email is required")
+			message := message(false, err.Error())
 			json.NewEncoder(w).Encode(message)
 			return
 		}
 
-		if account.Password == "" {
-			w.WriteHeader(http.StatusForbidden)
-			message := message(false, "Password is required")
-			json.NewEncoder(w).Encode(message)
-			return
-		}
-
-		token := JWTToken{
+		token := models.JWTToken{
 			Token: "123qweasdzxc456rtyfghvbn",
 		}
 
